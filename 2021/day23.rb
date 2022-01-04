@@ -1,11 +1,11 @@
-# rooms = [{ type: 'A', entrance: 2, amphipods: ['C', 'D', 'D', 'B'] },
-#          { type: 'B', entrance: 4, amphipods: ['A', 'B', 'C', 'B'] },
-#          { type: 'C', entrance: 6, amphipods: ['A', 'A', 'B', 'D'] },
-#          { type: 'D', entrance: 8, amphipods: ['C', 'C', 'A', 'D'] }]
-rooms = [{ type: 'A', entrance: 2, amphipods: ['A', 'D', 'D', 'B'] },
-         { type: 'B', entrance: 4, amphipods: ['D', 'B', 'C', 'C'] },
-         { type: 'C', entrance: 6, amphipods: ['C', 'A', 'B', 'B'] },
-         { type: 'D', entrance: 8, amphipods: ['A', 'C', 'A', 'D'] }]
+rooms = [{ type: 'A', entrance: 2, amphipods: ['C', 'D', 'D', 'B'] },
+         { type: 'B', entrance: 4, amphipods: ['A', 'B', 'C', 'B'] },
+         { type: 'C', entrance: 6, amphipods: ['A', 'A', 'B', 'D'] },
+         { type: 'D', entrance: 8, amphipods: ['C', 'C', 'A', 'D'] }]
+# rooms = [{ type: 'A', entrance: 2, amphipods: ['A', 'D', 'D', 'B'] },
+#          { type: 'B', entrance: 4, amphipods: ['D', 'B', 'C', 'C'] },
+#          { type: 'C', entrance: 6, amphipods: ['C', 'A', 'B', 'B'] },
+#          { type: 'D', entrance: 8, amphipods: ['A', 'C', 'A', 'D'] }]
 # rooms = [{ type: 'A', entrance: 2, amphipods: ['C', 'B'] },
 #          { type: 'B', entrance: 4, amphipods: ['A', 'B'] },
 #          { type: 'C', entrance: 6, amphipods: ['A', 'D'] },
@@ -22,7 +22,7 @@ ENERGY = {
   C: 100,
   D: 1000
 }
-ROOM_SPACE = 2
+ROOM_SPACE = 4
 
 class State
   include Comparable
@@ -93,8 +93,6 @@ def hallway_empty?(hallway)
 end
 
 def free_hallway_positions(hallway, room)
-  return [*0..10] - [2, 4, 6, 8] if hallway_empty?(hallway)
-
   i = room[:entrance]
   i -= 1 while i >= 0 && hallway[i] == '.'
   j = room[:entrance]
@@ -166,7 +164,11 @@ def move(rooms, hallway)
         dup_rooms = dup_rooms(state.rooms)
         dup_hallway = state.hallway.dup
         cost = state.cost + move_to_hallway(dup_rooms, i, dup_hallway, j)
-        cost += move_to_room(dup_rooms, dup_hallway)
+        move_to_room_cost = move_to_room(dup_rooms, dup_hallway)
+        while move_to_room_cost.positive?
+          cost += move_to_room_cost
+          move_to_room_cost = move_to_room(dup_rooms, dup_hallway)
+        end
 
         pq << State.new(dup_rooms, dup_hallway, cost)
       end
