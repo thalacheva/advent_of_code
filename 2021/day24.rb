@@ -41,7 +41,7 @@ end
 
 def find_model_number
   # number = ('9' * 14).to_i
-  number = 99999966294164
+  number = 99999922586998
 
   while number >= ('1' * 14).to_i
     str = number.to_s
@@ -63,4 +63,4 @@ def find_model_number
   end
 end
 
-puts find_model_number
+puts "Model number is #{find_model_number}"

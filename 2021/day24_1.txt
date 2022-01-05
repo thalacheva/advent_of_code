@@ -1,0 +1,109 @@
+inp w1    inp w2    inp w3     inp w4     inp w5     inp w6     inp w7     inp w8     inp w9
+mul x 0   mul x 0   mul x 0    mul x 0    mul x 0    mul x 0    mul x 0    mul x 0    mul x 0
+add x z   add x z   add x z    add x z    add x z    add x z    add x z    add x z    add x z
+mod x 26  mod x 26  mod x 26   mod x 26   mod x 26   mod x 26   mod x 26   mod x 26   mod x 26
+div z 1   div z 1   div z 1    div z 26   div z 1    div z 1    div z 26   div z 26   div z 26
+add x 11  add x 13  add x 15   add x -8   add x 13   add x 15   add x -11  add x -4   add x -15
+eql x w   eql x w   eql x w    eql x w    eql x w    eql x w    eql x w    eql x w    eql x w
+eql x 0   eql x 0   eql x 0    eql x 0    eql x 0    eql x 0    eql x 0    eql x 0    eql x 0
+mul y 0   mul y 0   mul y 0    mul y 0    mul y 0    mul y 0    mul y 0    mul y 0    mul y 0
+add y 25  add y 25  add y 25   add y 25   add y 25   add y 25   add y 25   add y 25   add y 25
+mul y x   mul y x   mul y x    mul y x    mul y x    mul y x    mul y x    mul y x    mul y x
+add y 1   add y 1   add y 1    add y 1    add y 1    add y 1    add y 1    add y 1    add y 1
+mul z y   mul z y   mul z y    mul z y    mul z y    mul z y    mul z y    mul z y    mul z y
+mul y 0   mul y 0   mul y 0    mul y 0    mul y 0    mul y 0    mul y 0    mul y 0    mul y 0
+add y w   add y w   add y w    add y w    add y w    add y w    add y w    add y w    add y w
+add y 6   add y 14  add y 14   add y 10   add y 9    add y 12   add y 8    add y 13   add y 12
+mul y x   mul y x   mul y x    mul y x    mul y x    mul y x    mul y x    mul y x    mul y x
+add z y   add z y   add z y    add z y    add z y    add z y    add z y    add z y    add z y
+
+1. z = w1 + 6
+2. z = (w1 + 6)*26 + w2 + 14
+3. z = (w1 + 6)*26^2 + (w2 + 14)*26 + (w3 + 14)
+4. w3 + 6 = w4
+   z = (w1 + 6)*26 + (w2 + 14)
+5. z = (w1 + 6)*26^2 + (w2 + 14)*26 + (w5 + 9)
+6. z = (w1 + 6)*26^3 + (w2 + 14)*26^2 + (w5 + 9)*26 + (w6 + 12)
+7. w6 + 1 = w7
+   z = (w1 + 6)*26^2 + (w2 + 14)*26 + (w5 + 9)
+8. w5 + 5 = w8
+   z = (w1 + 6)*26 + (w2 + 14)
+9. w2 - 1 = w9
+   z = w1 + 6
+10. z = (w1 + 6)*26 + w10 + 6
+11. z = (w1 + 6)*26^2 + (w10 + 6)*26 + w11 + 9
+12. w11 + 8 = w12
+    z = (w1 + 6)*26 + (w10 + 6)
+13. w10 - 2 = w13
+    z = w1 + 6
+14. w1 - 8 = w14
+    z = 0
+
+inp w10   inp w11   inp w12    inp w13    inp w14
+mul x 0   mul x 0   mul x 0    mul x 0    mul x 0
+add x z   add x z   add x z    add x z    add x z
+mod x 26  mod x 26  mod x 26   mod x 26   mod x 26
+div z 1   div z 1   div z 26   div z 26   div z 26
+add x 14  add x 14  add x -1   add x -8   add x -14
+eql x w   eql x w   eql x w    eql x w    eql x w
+eql x 0   eql x 0   eql x 0    eql x 0    eql x 0
+mul y 0   mul y 0   mul y 0    mul y 0    mul y 0
+add y 25  add y 25  add y 25   add y 25   add y 25
+mul y x   mul y x   mul y x    mul y x    mul y x
+add y 1   add y 1   add y 1    add y 1    add y 1
+mul z y   mul z y   mul z y    mul z y    mul z y
+mul y 0   mul y 0   mul y 0    mul y 0    mul y 0
+add y w   add y w   add y w    add y w    add y w
+add y 6   add y 9   add y 15   add y 4    add y 10
+mul y x   mul y x   mul y x    mul y x    mul y x
+add z y   add z y   add z y    add z y    add z y
+
+w1 - 8 = w14
+w2 - 1 = w9
+w3 + 6 = w4
+w5 + 5 = w8
+w6 + 1 = w7
+w10 - 2 = w13
+w11 + 8 = w12
+
+w1 = 9
+w2 = 9
+w3 = 3
+w4 = 9
+w5 = 4
+w6 = 8
+w7 = 9
+w8 = 9
+w9 = 8
+w10 = 9
+w11 = 1
+w12 = 9
+w13 = 7
+w14 = 1
+
+99394899891971
+
+w1 - 8 = w14
+w2 - 1 = w9
+w3 + 6 = w4
+w5 + 5 = w8
+w6 + 1 = w7
+w10 - 2 = w13
+w11 + 8 = w12
+
+w1 = 9
+w2 = 2
+w3 = 1
+w4 = 7
+w5 = 1
+w6 = 1
+w7 = 2
+w8 = 6
+w9 = 1
+w10 = 3
+w11 = 1
+w12 = 9
+w13 = 1
+w14 = 1
+
+92171126131911
