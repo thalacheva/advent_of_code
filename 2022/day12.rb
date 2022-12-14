@@ -6,25 +6,44 @@ lines.each do |line|
   row = line.chomp.split('')
   map << row
 end
-visited = Array.new(map.length) { Array.new(map[0].length) { false }}
 
-def find_path(map, i, j, x, y, visited, path)
-  p "#{map[i][j]}, #{i}, #{j}, #{path}"
-  if i == x && j == y
-    $min_path = path if path < $min_path
-    return
-  end
-
-  visited[i][j] = true
-  find_path(map, i, j - 1, x, y, visited, path + 1) if j > 0 && allowed?(map[i][j-1], map[i][j]) && !visited[i][j-1]
-  find_path(map, i, j + 1, x, y, visited, path + 1) if j < map[0].length - 1 && allowed?(map[i][j+1], map[i][j]) && !visited[i][j+1]
-  find_path(map, i - 1, j, x, y, visited, path + 1) if i > 0 && allowed?(map[i-1][j], map[i][j]) && !visited[i-1][j]
-  find_path(map, i + 1, j, x, y, visited, path + 1) if i < map.length - 1 && allowed?(map[i+1][j], map[i][j]) && !visited[i+1][j]
-  visited[i][j] = false
+def safe?(map, x, y, next_x, next_y, m, n)
+  # next_x >= 0 && next_y >= 0 && next_x < m && next_y < n && map[next_x][next_y].ord <= map[x][y].ord + 1
+  next_x >= 0 && next_y >= 0 && next_x < m && next_y < n && map[x][y].ord <= map[next_x][next_y].ord + 1
 end
 
-def allowed?(new_pos, old_pos)
-  new_pos.ord <= old_pos.ord + 1
+def min_path(map, si, sj)
+  dx = [1, 0, -1, 0]
+  dy = [0, 1, 0, -1]
+  m = map.length
+  n = map[0].length
+  dists = Array.new(m) { Array.new(n) { 999999999 } }
+  visited = Array.new(m) { Array.new(n) { false } }
+  dists[si][sj] = 0
+  pq = []
+  pq << { x: si, y: sj, dist: 0 }
+
+  until pq.empty?
+    pq.sort_by! { |p| -p[:dist] }
+    cell = pq.pop
+    x = cell[:x]
+    y = cell[:y]
+
+    next if visited[x][y]
+
+    visited[x][y] = true
+
+    for i in 0..dx.length-1 do
+      next_x = x + dx[i]
+      next_y = y + dy[i]
+      if safe?(map, x, y, next_x, next_y, m, n) && !visited[next_x][next_y]
+        dists[next_x][next_y] = [dists[next_x][next_y], dists[x][y] + 1].min
+        pq << { x: next_x, y: next_y, dist: dists[next_x][next_y] }
+      end
+    end
+  end
+
+  dists
 end
 
 si = 0
@@ -47,7 +66,15 @@ for i in 0..map.length - 1 do
   end
 end
 
-$min_path = map.length * map[0].length
-find_path(map, si, sj, ei, ej, visited, 0)
+# dists = min_path(map, si, sj)
+# p dists[ei][ej]
 
-p $min_path
+dists = min_path(map, ei, ej)
+min_path = 999999999
+for i in 0..map.length - 1 do
+  for j in 0..map[i].length - 1 do
+    min_path = dists[i][j] if map[i][j] == 'a' && dists[i][j] < min_path
+  end
+end
+
+p min_path
