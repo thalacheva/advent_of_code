@@ -45,7 +45,7 @@ tower = []
 j = 0
 i = 0
 p jets.length
-while i < 2022 do
+while i < 1000000000000 do
   rock = Marshal.load(Marshal.dump(rocks[i % 5]))
   unit = Array.new(3) { Array.new(7) { '.' } } + rock
   tower += unit
@@ -71,8 +71,9 @@ while i < 2022 do
     end
   end
 
-  if i % 5 == j % jets.length
+  if i % 5 == 0 && j % jets.length == 0
     p "i=#{i}, j=#{j}, tower height is #{tower.height}"
+    break
   end
 end
 

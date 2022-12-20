@@ -64,9 +64,9 @@ def move2(valves, you, elephant, your_mins, elephant_mins, pressure)
     return
   end
 
-  if your_mins < $mins
-    dijkstra(valves, you)
-    rest.each do |v|
+  rest.each do |v|
+    if your_mins < $mins
+      dijkstra(valves, you)
       your_mins += v.path + 1
       v.open = true
       pressure += [$mins - your_mins, 0].max * v.rate
@@ -76,11 +76,9 @@ def move2(valves, you, elephant, your_mins, elephant_mins, pressure)
       pressure -= [$mins - your_mins, 0].max * v.rate
       your_mins -= v.path + 1
     end
-  end
 
-  if elephant_mins < $mins
-    dijkstra(valves, elephant)
-    rest.each do |v|
+    if elephant_mins < $mins
+      dijkstra(valves, elephant)
       elephant_mins += v.path + 1
       v.open = true
       pressure += [$mins - elephant_mins, 0].max * v.rate
