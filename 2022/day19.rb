@@ -14,35 +14,35 @@ def build_geode_robot(b, materials, new_robots)
     materials[2] -= b.geode[1]
   end
 
-  materials
+  [materials, new_robots]
 end
 
 def build_obsidian_robot(b, materials, new_robots)
-  if b.obsidian[0] <= materials[0] && b.obsidian[1] <= materials[1]
+  if b.obsidian[0] <= materials[0] && b.obsidian[1] <= materials[1] && b.geode[1] > materials[2]
     new_robots[2] += 1
     materials[0] -= b.obsidian[0]
     materials[1] -= b.obsidian[1]
   end
 
-  materials
+  [materials, new_robots]
 end
 
 def build_clay_robot(b, materials, new_robots)
-  if b.clay <= materials[0]
+  if b.clay <= materials[0] && b.obsidian[1] > materials[1]
     new_robots[1] += 1
     materials[0] -= b.clay
   end
 
-  materials
+  [materials, new_robots]
 end
 
 def build_ore_robot(b, materials, new_robots)
-  if b.ore <= materials[0]
+  if b.ore <= materials[0] && new_robots[0] < new_robots[1] && new_robots[0] < new_robots[2] && new_robots[0] < new_robots[3]
     new_robots[0] += 1
     materials[0] -= b.ore
   end
 
-  materials
+  [materials, new_robots]
 end
 
 def factory(b)
@@ -52,10 +52,10 @@ def factory(b)
 
   for i in 1..24 do
     new_robots = [0, 0, 0, 0]
-    materials = build_geode_robot(b, materials, new_robots)
-    materials = build_obsidian_robot(b, materials, new_robots)
-    materials = build_clay_robot(b, materials, new_robots)
-    materials = build_ore_robot(b, materials, new_robots)
+    materials, new_robots = build_geode_robot(b, materials, new_robots)
+    materials, new_robots = build_obsidian_robot(b, materials, new_robots)
+    materials, new_robots = build_clay_robot(b, materials, new_robots)
+    materials, new_robots = build_ore_robot(b, materials, new_robots)
 
     robots.each_with_index { |r, i| materials[i] += r }
     new_robots.each_with_index { |r, i| robots[i] += r }

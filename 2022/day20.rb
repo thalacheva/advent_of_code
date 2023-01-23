@@ -1,40 +1,54 @@
 require 'pry'
 
-file = File.readlines('day20.txt')
-Number = Struct.new(:value, :moved)
-numbers = []
-file.each do |line|
-  numbers << Number.new(line.chomp.to_i, false)
+numbers = File.readlines('day20.txt').map { |i| i.chomp.to_i }
+
+def find_sum(numbers)
+  n = numbers.length
+  zero = numbers.find_index { |x| x == 0 }
+  i1 = (zero + 1000) % n
+  i2 = (zero + 2000) % n
+  i3 = (zero + 3000) % n
+
+  p "#{numbers[i1]}, #{numbers[i2]}, #{numbers[i3]}"
+  numbers[i1] + numbers[i2] + numbers[i3]
 end
-n = numbers.length
-while numbers.reject(&:moved).length > 0 do
-  current = numbers.reject(&:moved).first
-  i = numbers.index(current)
-  current.moved = true
-  next if current.value % n == 0 || current.value == 0
 
-  v = current.value.abs % n
-  v = -v if current.value < 0
-  m = i + v
+def part1(numbers, original)
+  n = numbers.length
+  original.each do |current|
+    next if current % (n - 1) == 0 || current == 0
 
-  if v < 0
-    m = n + m - 1 if m < 0
-    m = n - 1 if m == 0
-  else
-    m = m - n + 1 if m > n - 1
-    m = 0 if m == n - 1
+    i = numbers.index(current)
+    v = current.abs % (n - 1)
+    v = -v if current < 0
+    m = i + v
+    m += n - 1 if m <= 0 && v < 0
+    m -= n - 1 if m >= n && v > 0
+    numbers.insert(m, numbers.delete_at(i))
+    # p "moving #{v}"
+    # p numbers.map {|v| v < 0 ? -(v.abs % (n - 1)) : v % (n - 1)}
   end
 
-  numbers.insert(m, numbers.delete_at(i))
-  # p "#{current.value} moves at index #{m}"
-  # p numbers.map(&:value)
+  numbers
 end
 
-zero = numbers.find_index { |n| n.value == 0 }
-i1 = (zero + 1000) % n
-i2 = (zero + 2000) % n
-i3 = (zero + 3000) % n
+def part2(numbers)
+  key = 811589153
+  n = numbers.length
+  decrypted = numbers.map { |num| num * key }
+  original = decrypted.dup
+  p "Initial"
+  p decrypted.map {|v| v < 0 ? -(v.abs % (n - 1)) : v % (n - 1)}
 
-p "i1=#{i1}, i2=#{i2}, i3=#{i3}"
-p "i1=#{numbers[i1].value}, i2=#{numbers[i2].value}, i3=#{numbers[i3].value}"
-p numbers[i1].value + numbers[i2].value + numbers[i3].value
+  10.times do |round|
+    decrypted = part1(decrypted, original)
+    p "round #{round + 1}"
+    p decrypted.map {|v| v < 0 ? -(v.abs % (n - 1)) : v % (n - 1)}
+    p decrypted
+  end
+
+  p find_sum(decrypted)
+end
+
+# part1(numbers, numbers.dup)
+part2(numbers)

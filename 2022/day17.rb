@@ -44,18 +44,14 @@ end
 tower = []
 j = 0
 i = 0
+sum = 0
+last = 0
 p jets.length
-while i < 1000000000000 do
-  if i % 5 == 0 && j % jets.length == 0 && i > 0 && j > 0
-    p "i=#{i}, j=#{j}, tower height is #{tower.height}"
-    break
-  end
-
+while i < 4881 do
   rock = Marshal.load(Marshal.dump(rocks[i % 5]))
   unit = Array.new(3) { Array.new(7) { '.' } } + rock
   tower += unit
   i += 1
-  p "i = #{i}"
   falling = true
   while falling do
     jet = jets[j % jets.length]
@@ -74,8 +70,16 @@ while i < 1000000000000 do
       indexes.each { |a| tower[a[0]][a[1]] = '#' }
       falling = false
     end
+
+    if j % jets.length == 0
+      p "i=#{i}, j=#{j}, tower height is #{tower.length + sum}, diff #{tower.length + sum - last}"
+      last = tower.length + sum
+      sum += tower.length - 100
+      tower.shift(tower.length - 100)
+    end
   end
 end
 
+pp tower
 p "i = #{i}, j = #{j}"
-p tower.length
+p tower.length + sum
