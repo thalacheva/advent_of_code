@@ -1,3 +1,5 @@
+require 'pry'
+
 cubes = File.readlines('day18.txt').map { |l| l.chomp.split(',').map(&:to_i) }
 
 def common_side?(cube1, cube2)
@@ -13,15 +15,69 @@ def common_side?(cube1, cube2)
   return false
 end
 
-sides = 0
-counted_cubes = []
-cubes.each do |c1|
-  cube_sides = 6
-  counted_cubes.each do |c2|
-    cube_sides -= 2 if common_side?(c1, c2)
+def find_surface(cubes)
+  p "finding surface for #{cubes.length}"
+  sides = 0
+  counted_cubes = []
+  cubes.each do |c1|
+    cube_sides = 6
+    counted_cubes.each do |c2|
+      cube_sides -= 2 if common_side?(c1, c2)
+    end
+    sides += cube_sides
+    counted_cubes << c1
   end
-  sides += cube_sides
-  counted_cubes << c1
+
+  p "found #{sides} sides"
+  sides
 end
 
-p sides
+def find_pocket(space, x, y, z, cubes, visited)
+  return false if x == 0 || y == 0 || z == 0 || x == 19 || y == 19 || z == 19
+  return [] if visited[x][y][z] || space[x][y][z] == 1
+
+  visited[x][y][z] = true
+  cubes << [x, y, z]
+
+  x1 = find_pocket(space, x + 1, y, z, cubes, visited)
+  x2 = find_pocket(space, x - 1, y, z, cubes, visited)
+  y1 = find_pocket(space, x, y + 1, z, cubes, visited)
+  y2 = find_pocket(space, x, y - 1, z, cubes, visited)
+  z1 = find_pocket(space, x, y, z + 1, cubes, visited)
+  z2 = find_pocket(space, x, y, z - 1, cubes, visited)
+
+  return false unless x1 && x2 && y1 && y2 && z1 && z2
+
+  (cubes + x1 + x2 + y1 + y2 + z1 + z2).uniq
+end
+
+def part2(cubes)
+  space = Array.new(20) { Array.new(20) { Array.new(20) { 0 } } }
+  cubes.each { |c| space[c[0]][c[1]][c[2]] = 1 }
+
+  visited = Array.new(20) { Array.new(20) { Array.new(20) { false } } }
+  pockets = []
+  for x in 0..19 do
+    for y in 0..19 do
+      for z in 0..19 do
+        if space[x][y][z] == 0 && !visited[x][y][z]
+          pocket = find_pocket(space, x, y, z, [], visited)
+          if pocket
+            pockets << pocket
+          end
+        end
+      end
+    end
+  end
+
+  area = find_surface(cubes)
+  p "area surface is #{area}"
+  interior = 0
+  p "found #{pockets.length} pockets"
+
+  pockets.each { |p| interior += find_surface(p) }
+
+  p "exterior surface is #{area - interior}"
+end
+
+part2(cubes)
