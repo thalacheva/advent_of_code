@@ -32,23 +32,21 @@ def find_surface(cubes)
   sides
 end
 
-def find_pocket(space, x, y, z, cubes, visited)
+def find_pocket(space, x, y, z, visited)
   return false if x == 0 || y == 0 || z == 0 || x == 19 || y == 19 || z == 19
   return [] if visited[x][y][z] || space[x][y][z] == 1
 
   visited[x][y][z] = true
-  cubes << [x, y, z]
-
-  x1 = find_pocket(space, x + 1, y, z, cubes, visited)
-  x2 = find_pocket(space, x - 1, y, z, cubes, visited)
-  y1 = find_pocket(space, x, y + 1, z, cubes, visited)
-  y2 = find_pocket(space, x, y - 1, z, cubes, visited)
-  z1 = find_pocket(space, x, y, z + 1, cubes, visited)
-  z2 = find_pocket(space, x, y, z - 1, cubes, visited)
+  x1 = find_pocket(space, x + 1, y, z, visited)
+  x2 = find_pocket(space, x - 1, y, z, visited)
+  y1 = find_pocket(space, x, y + 1, z, visited)
+  y2 = find_pocket(space, x, y - 1, z, visited)
+  z1 = find_pocket(space, x, y, z + 1, visited)
+  z2 = find_pocket(space, x, y, z - 1, visited)
 
   return false unless x1 && x2 && y1 && y2 && z1 && z2
 
-  (cubes + x1 + x2 + y1 + y2 + z1 + z2).uniq
+  [[x, y, z]] + x1 + x2 + y1 + y2 + z1 + z2
 end
 
 def part2(cubes)
@@ -61,7 +59,7 @@ def part2(cubes)
     for y in 0..19 do
       for z in 0..19 do
         if space[x][y][z] == 0 && !visited[x][y][z]
-          pocket = find_pocket(space, x, y, z, [], visited)
+          pocket = find_pocket(space, x, y, z, visited)
           if pocket
             pockets << pocket
           end
