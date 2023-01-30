@@ -25,7 +25,7 @@ def password(current, direction)
       3
     end
 
-  p "x = #{current[0]}, y = #{current[1]}, direction = #{direction}, facing = #{facing}"
+  p "x = #{current[0] + 1}, y = #{current[1] + 1}, direction = #{direction}, facing = #{facing}"
   (current[0] + 1) * 1000 + (current[1] + 1) * 4 + facing
 end
 
@@ -131,93 +131,89 @@ def parse_tiles(path, step, index)
   [tiles, rotation]
 end
 
-def part1(map, path)
-  start = [0, map[0].index('.')]
-  direction = 'right'
-  current = start
-  path.each_with_index do |step, index|
-    tiles, rotation = parse_tiles(path, step, index)
-
-    case direction
-    when 'right'
-      i, j = go_right(map, current, tiles)
-      left_tiles = tiles - j + current[1] - 1
-      if left_tiles > 0 && out?(map, i, j + 1)
-        l = 0
-        l += 1 while out?(map, i, l)
-        i, j = go_right(map, [i, l], left_tiles) if map[i][l] != '#'
-      end
-    when 'left'
-      i, j = go_left(map, current, tiles)
-      left_tiles = tiles - current[1] + j - 1
-      if left_tiles > 0 && out?(map, i, j - 1)
-        l = map[i].length - 1
-        i, j = go_left(map, [i, l], left_tiles) if map[i][l] != '#'
-      end
-    when 'up'
-      i, j = go_up(map, current, tiles)
-      left_tiles = tiles - current[0] + i - 1
-      if left_tiles > 0 && out?(map, i - 1, j)
-        k = map.length - 1
-        k -= 1 while out?(map, k, j)
-        i, j = go_up(map, [k, j], left_tiles) if map[k][j] != '#'
-      end
-    when 'down'
-      i, j = go_down(map, current, tiles)
-      left_tiles = tiles - i + current[0] - 1
-      if left_tiles > 0 && out?(map, i + 1, j)
-        k = 0
-        k += 1 while out?(map, k, j)
-        i, j = go_down(map, [k, j], left_tiles) if map[k][j] != '#'
-      end
-    end
-
-    current = [i, j]
-    map[i][j] = 'C'
-
-    direction = rotate(direction, rotation) if rotation
+def part1_cube(i, j)
+  if i >= 0 && i < 50 && j >= 50 && j < 100 # side 1
+    return {
+      left: {coords: [i, 149], direction: 'left'},
+      up: {coords: [149, j], direction: 'up'},
+      right: {coords: [i, 100], direction: 'right'},
+      down: {coords: [50, j], direction: 'down'},
+    }
+  elsif i >= 0 && i < 50 && j >= 100 && j < 150 # side 2
+    return {
+      left: {coords: [i, 99], direction: 'left'},
+      up: {coords: [49, j], direction: 'up'},
+      right: {coords: [i, 50], direction: 'right'},
+      down: {coords: [0, j], direction: 'down'},
+    }
+  elsif i >= 50 && i < 100 && j >= 50 && j < 100 # side 3
+    return {
+      left: {coords: [i, 99], direction: 'left'},
+      up: {coords: [49, j], direction: 'up'},
+      right: {coords: [i, 50], direction: 'right'},
+      down: {coords: [100, j], direction: 'down'},
+    }
+  elsif i >= 100 && i < 150 && j >= 50 && j < 100 # side 4
+    return {
+      left: {coords: [i, 49], direction: 'left'},
+      up: {coords: [99, j], direction: 'up'},
+      right: {coords: [i, 0], direction: 'right'},
+      down: {coords: [0, j], direction: 'down'},
+    }
+  elsif i >= 100 && i < 150 && j >= 0 && j < 50 # side 5
+    return {
+      left: {coords: [i, 99], direction: 'left'},
+      up: {coords: [199, j], direction: 'up'},
+      right: {coords: [i, 50], direction: 'right'},
+      down: {coords: [150, j], direction: 'down'},
+    }
+  elsif i >= 150 && i < 200 && j >= 0 && j < 50 # side 6
+    return {
+      left: {coords: [i, 49], direction: 'left'},
+      up: {coords: [149, j], direction: 'up'},
+      right: {coords: [i, 0], direction: 'right'},
+      down: {coords: [100, j], direction: 'down'},
+    }
   end
-
-  password(current, direction)
 end
 
-def cube(i, j)
-  if i >= 0 && i < 50 && j >= 50 && j < 100
+def part2_cube(i, j)
+  if i >= 0 && i < 50 && j >= 50 && j < 100 # side 1
     return {
       left: {coords: [100 + 49 - i, 0], direction: 'right'},
       up: {coords: [150 + j - 50, 0], direction: 'right'},
       right: {coords: [i, 100], direction: 'right'},
       down: {coords: [50, j], direction: 'down'},
     }
-  elsif i >= 0 && i < 50 && j >= 100 && j < 150
+  elsif i >= 0 && i < 50 && j >= 100 && j < 150 # side 2
     return {
       left: {coords: [i, 99], direction: 'left'},
-      up: {coords: [199, j - 100], direction: 'up'},
+      up: {coords: [199, j - 100], direction: 'up' },
       right: {coords: [149 - i, 99], direction: 'left'},
       down: {coords: [50 + j - 100, 99], direction: 'left'},
     }
-  elsif i >= 50 && i < 100 && j >= 50 && j < 100
+  elsif i >= 50 && i < 100 && j >= 50 && j < 100 # side 3
     return {
       left: {coords: [100, i - 50], direction: 'down'},
       up: {coords: [49, j], direction: 'up'},
       right: {coords: [49, 100 + i - 50], direction: 'up'},
       down: {coords: [100, j], direction: 'down'},
     }
-  elsif i >= 100 && i < 150 && j >= 50 && j < 100
+  elsif i >= 100 && i < 150 && j >= 50 && j < 100 # side 4
     return {
       left: {coords: [i, 49], direction: 'left'},
       up: {coords: [99, j], direction: 'up'},
       right: {coords: [149 - i, 149], direction: 'left'},
       down: {coords: [150 + j - 50, 49], direction: 'left'},
     }
-  elsif i >= 100 && i < 150 && j >= 0 && j < 50
+  elsif i >= 100 && i < 150 && j >= 0 && j < 50 # side 5
     return {
       left: {coords: [149 - i, 50], direction: 'right'},
       up: {coords: [50 + j, 50], direction: 'right'},
       right: {coords: [i, 50], direction: 'right'},
       down: {coords: [150, j], direction: 'down'},
     }
-  elsif i >= 150 && i < 200 && j >= 0 && j < 50
+  elsif i >= 150 && i < 200 && j >= 0 && j < 50 # side 6
     return {
       left: {coords: [0, i - 150 + 50], direction: 'down'},
       up: {coords: [149, j], direction: 'up'},
@@ -274,14 +270,41 @@ def small_cube(i, j)
 end
 
 def go_next(map, i, j, direction, tiles)
-  pos = cube(i,j)[:"#{direction}"]
+  pos = part1_cube(i,j)[:"#{direction}"]
   k, l = pos[:coords]
-  if map[k][l] != '#'
-    new_direction = pos[:direction]
-    i1, j1 = go(map, [k, l], tiles, new_direction)
-  end
 
-  return [i1 || i, j1 || j, new_direction || direction]
+  return [i, j, direction] if map[k][l] == '#'
+
+  new_direction = pos[:direction]
+  i1, j1 = go(map, [k, l], tiles, new_direction)
+
+  return [i1, j1, new_direction]
+end
+
+def left_tiles(tiles, start, current, direction)
+  case direction
+  when 'right'
+    tiles - (current[1] + 1 - start[1])
+  when 'left'
+    tiles - (start[1] - (current[1] - 1))
+  when 'up'
+    tiles - (start[0] - (current[0] - 1))
+  when 'down'
+    tiles - (current[0] + 1 - start[0])
+  end
+end
+
+def next_step(i, j, direction)
+  case direction
+  when 'right'
+    [i, j + 1]
+  when 'left'
+    [i, j - 1]
+  when 'up'
+    [i - 1, j]
+  when 'down'
+    [i + 1, j]
+  end
 end
 
 def part2(map, path)
@@ -290,42 +313,19 @@ def part2(map, path)
   current = start
   path.each_with_index do |step, index|
     tiles, rotation = parse_tiles(path, step, index)
-    # clean(map)
+    i, j = go(map, current, tiles, direction)
+    left_tiles = left_tiles(tiles, current, [i, j], direction)
+    k, l = next_step(i, j, direction)
 
-    case direction
-    when 'right'
-      i, j = go_right(map, current, tiles)
-      left_tiles = tiles - (j + 1 - current[1])
-      if left_tiles > 0 && out?(map, i, j + 1)
-        i, j, new_direction = go_next(map, i, j, direction, left_tiles)
-      end
-    when 'left'
-      i, j = go_left(map, current, tiles)
-      left_tiles = tiles - (current[1] - (j - 1))
-      if left_tiles > 0 && out?(map, i, j - 1)
-        i, j, new_direction = go_next(map, i, j, direction, left_tiles)
-      end
-    when 'up'
-      i, j = go_up(map, current, tiles)
-      left_tiles = tiles - (current[0] - (i - 1))
-      if left_tiles > 0 && out?(map, i - 1, j)
-        i, j, new_direction = go_next(map, i, j, direction, left_tiles)
-      end
-    when 'down'
-      i, j = go_down(map, current, tiles)
-      left_tiles = tiles - (i + 1 - current[0])
-      if left_tiles > 0 && out?(map, i + 1, j)
-        i, j, new_direction = go_next(map, i, j, direction, left_tiles)
-      end
+    while left_tiles > 0 && out?(map, k, l)
+      current = [i, j]
+      i, j, direction = go_next(map, i, j, direction, left_tiles)
+      left_tiles = left_tiles(left_tiles, current, [i, j], direction)
+      k, l = next_step(i, j, direction)
     end
 
     current = [i, j]
     map[i][j] = 'C'
-    if new_direction
-      direction = new_direction
-      # draw(map)
-      # binding.pry
-    end
     direction = rotate(direction, rotation) if rotation
   end
 

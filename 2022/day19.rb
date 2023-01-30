@@ -81,21 +81,23 @@ def geode?(b, materials)
 end
 
 def factory(b, mins, robots: , materials:)
+  return if  materials[3] + mins * robots[3] + (mins - 1) * mins / 2 < b.max
+
   if mins == 0
     b.max = [materials[3], b.max].max
     return
   end
 
-  ore = ore?(b, materials) && robots[0] < b.clay
+  ore = ore?(b, materials) && robots[0] < [b.clay, b.obsidian[0], b.geode[0]].max
   clay = clay?(b, materials) && robots[1] < b.obsidian[1]
   obsidian = obsidian?(b, materials) && robots[2] < b.geode[1]
 
   if geode?(b, materials)
     factory(b, mins - 1, build_geode_robot(b, materials, robots))
   else
+    factory(b, mins - 1, build_obsidian_robot(b, materials, robots)) if obsidian
     factory(b, mins - 1, build_ore_robot(b, materials, robots)) if ore
     factory(b, mins - 1, build_clay_robot(b, materials, robots)) if clay
-    factory(b, mins - 1, build_obsidian_robot(b, materials, robots)) if obsidian
     factory(b, mins - 1, dont_build_robot(b, materials, robots))
   end
 end
