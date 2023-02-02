@@ -270,27 +270,20 @@ def small_cube(i, j)
 end
 
 def go_next(map, i, j, direction, tiles)
-  pos = part1_cube(i,j)[:"#{direction}"]
+  pos = part2_cube(i,j)[:"#{direction}"]
   k, l = pos[:coords]
-
   return [i, j, direction] if map[k][l] == '#'
 
-  new_direction = pos[:direction]
-  i1, j1 = go(map, [k, l], tiles, new_direction)
-
-  return [i1, j1, new_direction]
+  i1, j1 = go(map, [k, l], tiles, pos[:direction])
+  return [i1, j1, pos[:direction]]
 end
 
 def left_tiles(tiles, start, current, direction)
   case direction
-  when 'right'
-    tiles - (current[1] + 1 - start[1])
-  when 'left'
-    tiles - (start[1] - (current[1] - 1))
-  when 'up'
-    tiles - (start[0] - (current[0] - 1))
-  when 'down'
-    tiles - (current[0] + 1 - start[0])
+  when 'right', 'left'
+    tiles - (current[1] - start[1]).abs
+  when 'up', 'down'
+    tiles - (current[0] - start[0]).abs
   end
 end
 
@@ -307,7 +300,7 @@ def next_step(i, j, direction)
   end
 end
 
-def part2(map, path)
+def find_path(map, path)
   start = [0, map[0].index('.')]
   direction = 'right'
   current = start
@@ -317,11 +310,11 @@ def part2(map, path)
     left_tiles = left_tiles(tiles, current, [i, j], direction)
     k, l = next_step(i, j, direction)
 
-    while left_tiles > 0 && out?(map, k, l)
+    if left_tiles > 0 && out?(map, k, l)
+      p "move #{tiles} to #{direction}, reached #{i}, #{j}"
       current = [i, j]
-      i, j, direction = go_next(map, i, j, direction, left_tiles)
-      left_tiles = left_tiles(left_tiles, current, [i, j], direction)
-      k, l = next_step(i, j, direction)
+      i, j, direction = go_next(map, i, j, direction, left_tiles - 1)
+      p "afer wrap move #{left_tiles} to #{direction}, reached #{i}, #{j}"
     end
 
     current = [i, j]
@@ -332,5 +325,5 @@ def part2(map, path)
   password(current, direction)
 end
 
-p part2(map, path)
-draw(map)
+p find_path(map, path)
+# draw(map)
