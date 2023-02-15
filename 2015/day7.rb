@@ -9,33 +9,50 @@ end
 $wires = Hash.new
 input.each do |line|
   expression, wire = line.split('->').map(&:strip)
-  $wires[wire] = expression
+  $wires[wire] = [expression, number?(expression) ? expression.to_i : nil]
 end
 
 def calc(wire)
-  if number?(wire)
-    p wire
-    return wire.to_i
+  return wire.to_i if number?(wire)
+
+  value = nil
+
+  if $wires[wire][1]
+    value = $wires[wire][1]
+  else
+    expression = $wires[wire][0]
+    value =
+      if expression.start_with?('NOT')
+        65535 - calc(expression[4..-1])
+      elsif expression.include?('AND')
+        left, right = expression.split('AND').map(&:strip)
+        calc(left) & calc(right)
+      elsif expression.include?('OR')
+        left, right = expression.split('OR').map(&:strip)
+        calc(left) | calc(right)
+      elsif expression.include?('LSHIFT')
+        left, right = expression.split('LSHIFT').map(&:strip)
+        calc(left) << calc(right)
+      elsif expression.include?('RSHIFT')
+        left, right = expression.split('RSHIFT').map(&:strip)
+        calc(left) >> calc(right)
+      else
+        calc(expression)
+      end
   end
 
-  expression = $wires[wire]
-  if expression.start_with?('NOT')
-    return 65535 - calc(expression[4..-1])
-  elsif expression.include?('AND')
-    left, right = expression.split('AND').map(&:strip)
-    return calc(left) & calc(right)
-  elsif expression.include?('OR')
-    left, right = expression.split('OR').map(&:strip)
-    return calc(left) | calc(right)
-  elsif expression.include?('LSHIFT')
-    left, right = expression.split('LSHIFT').map(&:strip)
-    return calc(left) << calc(right)
-  elsif expression.include?('RSHIFT')
-    left, right = expression.split('RSHIFT').map(&:strip)
-    return calc(left) >> calc(right)
-  else
-    return calc(expression)
-  end
+  $wires[wire][1] = value
+  return value
 end
 
-p calc('a')
+calc('a')
+signal = $wires['a'][1]
+
+input.each do |line|
+  expression, wire = line.split('->').map(&:strip)
+  $wires[wire] = [expression, number?(expression) ? expression.to_i : nil]
+end
+
+$wires['b'][1] = signal
+calc('a')
+p $wires['a']
