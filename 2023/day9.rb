@@ -1,3 +1,4 @@
+# --- Day 9: Mirage Maintenance ---
 sequences = File.readlines('day9.txt').map { |s| s.split(' ').map(&:to_i) }
 
 def predict(sequence)

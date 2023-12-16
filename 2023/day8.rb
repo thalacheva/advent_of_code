@@ -1,3 +1,4 @@
+# --- Day 8: Haunted Wasteland ---
 lines = File.readlines('day8.txt').map(&:chomp)
 
 instructions = lines.first

@@ -1,3 +1,5 @@
+# --- Day 7: Camel Cards ---
+
 lines = File.readlines('day7.txt').map(&:chomp)
 
 def find_type(hand)
