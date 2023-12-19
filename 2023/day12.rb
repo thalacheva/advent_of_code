@@ -1,5 +1,5 @@
 # --- Day 12: Hot Springs ---
-springs = File.readlines('day12.txt').map(&:chomp)
+input = File.readlines('day12.txt').map(&:chomp)
 
 def count(springs, groups)
   regex = groups.map { |group| "(#){#{group}}" }.join("(\\.|\\?)+")
@@ -13,9 +13,25 @@ def count(springs, groups)
     end.length
 end
 
-def part1(springs)
+def count2(springs, groups)
+  regex = groups.map { |group| "(#){#{group}}" }.join("(\\.|\\?)+")
+  # present_operational = springs.count('.')
+  # present_damaged = springs.count('#')
+  # desired_damaged = groups.sum
+  # desired_operational = springs.length - desired_damaged
+
+  min_string = groups.map { |group| "#" * group }.join('.')
+
+  freedom = springs.length - min_string.length
+  return 1 if freedom == 0
+
+
+
+end
+
+def part1(input)
   total = 0
-  springs.each do |row|
+  input.each do |row|
     springs, groups = row.split(' ')
     groups = groups.split(',').map(&:to_i)
     count = count(springs, groups)
@@ -26,29 +42,18 @@ def part1(springs)
   total
 end
 
-def part2(springs)
+def part2(input)
   total = 0
-  sorted = springs.sort_by { |row| row.count('?') }
+  sorted = input.sort_by { |row| row.count('?') }
 
   sorted.each_with_index do |row, index|
     p "row #{index}"
     springs, groups = row.split(' ')
     groups = groups.split(',').map(&:to_i)
 
-    a = springs + '?' + springs
-    b = a.split(/\.+/)
-    g = groups + groups
-    x = 0
-    if b.length == groups.length * 2
-      b.each_with_index do |group, index|
-        x *= count(group, [g[index]])
-      end
-    else
-
-    end
-
-    y = count(springs, groups)
-    count = x**4 / y**3
+    x = count(springs, groups)
+    y = count(springs + '?' + springs, groups + groups)
+    count = y**4 / x**3
 
     p "#{springs} - #{count}"
     total += count
@@ -58,7 +63,7 @@ def part2(springs)
   total
 end
 
-def parse_output(springs)
+def parse_output(input)
   total = 0
   output = File.readlines('12output.txt').map(&:chomp)
   output.each do |row|
@@ -68,9 +73,15 @@ def parse_output(springs)
 
   p "total #{total}"
   p "left"
-  springs.sort_by { |x| x.count('?') }.last(49).each { |x| p x }
+  input.sort_by { |x| x.count('?') }.last(49).each { |x| p x }
 end
 
-# p part1(springs)
-# p part2(springs)
-parse_output springs
+# p part1(input)
+# p part2(input)
+# parse_output input
+
+input.each do |row|
+  springs, groups = row.split(' ')
+  groups = groups.split(',').map(&:to_i)
+  count2(springs, groups)
+end
