@@ -39,27 +39,27 @@ Path = Struct.new(:cost, :directions)
 def dijkstra(map)
   n = map.size
   paths = Array.new(n) { Array.new(n) { Path.new(INFINITY, []) } }
-  visited = Array.new(n) { Array.new(n) { false } }
-  pq = [[0, 0]]
+  visited = []
+  pq = [[0, 0, nil]]
   paths[0][0] = Path.new(0, [])
 
   until pq.empty?
     pq.sort_by! { |p| paths[p[0]][p[1]].cost }
 
-    i, j = pq.shift
+    i, j, dir = pq.shift
 
-    next if visited[i][j]
+    next if visited.include?([i, j, dir])
 
-    visited[i][j] = true
+    visited << [i, j, dir]
 
     adjacent(n, i, j, paths[i][j].directions).each do |x, y, d|
-      next if visited[x][y]
+      next if visited.include?([x, y, d])
 
       if paths[i][j].cost + map[x][y] < paths[x][y].cost
         paths[x][y] = Path.new(paths[i][j].cost + map[x][y], paths[i][j].directions + [d])
       end
 
-      pq << [x, y] unless pq.include?([x, y])
+      pq << [x, y, d] unless pq.include?([x, y, d])
     end
   end
 
@@ -67,6 +67,7 @@ def dijkstra(map)
 end
 
 $min = dijkstra(map)
+p "initial min: #{$min}"
 def dfs(map, current, path, visited, goal)
   path << current
   visited[current[0]][current[1]] = true
@@ -93,7 +94,4 @@ def experiment(map)
 
   dfs(map, [0, 0], [], visited, [n - 1, n - 1])
 end
-
-experiment(map)
-p "min: #{$min}"
 

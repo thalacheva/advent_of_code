@@ -13,22 +13,6 @@ def count(springs, groups)
     end.length
 end
 
-def count2(springs, groups)
-  regex = groups.map { |group| "(#){#{group}}" }.join("(\\.|\\?)+")
-  # present_operational = springs.count('.')
-  # present_damaged = springs.count('#')
-  # desired_damaged = groups.sum
-  # desired_operational = springs.length - desired_damaged
-
-  min_string = groups.map { |group| "#" * group }.join('.')
-
-  freedom = springs.length - min_string.length
-  return 1 if freedom == 0
-
-
-
-end
-
 def part1(input)
   total = 0
   input.each do |row|
@@ -50,7 +34,6 @@ def part2(input)
     p "row #{index}"
     springs, groups = row.split(' ')
     groups = groups.split(',').map(&:to_i)
-
     x = count(springs, groups)
     y = count(springs + '?' + springs, groups + groups)
     count = y**4 / x**3
@@ -71,17 +54,12 @@ def parse_output(input)
     total += row.scan(/\d+/).first.to_i
   end
 
-  p "total #{total}"
+  p "current total #{total}"
   p "left"
   input.sort_by { |x| x.count('?') }.last(49).each { |x| p x }
 end
 
 # p part1(input)
-# p part2(input)
+p part2(input)
 # parse_output input
 
-input.each do |row|
-  springs, groups = row.split(' ')
-  groups = groups.split(',').map(&:to_i)
-  count2(springs, groups)
-end
