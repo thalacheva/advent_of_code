@@ -3,7 +3,7 @@ INFINITY = 1 << 64
 
 def adjacent(n, i, j, directions)
   adjacent = []
-  if directions.empty? || directions == [nil]
+  if directions.empty?
     adjacent << [i - 1, j, :up] if i > 0
     adjacent << [i + 1, j, :down] if i < n - 1
     adjacent << [i, j - 1, :left] if j > 0
@@ -34,17 +34,15 @@ def adjacent(n, i, j, directions)
   adjacent
 end
 
-Path = Struct.new(:cost, :directions)
-
 def dijkstra(map)
   n = map.size
-  paths = Array.new(n) { Array.new(n) { Path.new(INFINITY, []) } }
+  paths = Array.new(n) { Array.new(n) { [INFINITY, []] } }
   visited = []
   pq = [[0, 0, nil]]
-  paths[0][0] = Path.new(0, [])
+  paths[0][0] = [0, []]
 
   until pq.empty?
-    pq.sort_by! { |p| paths[p[0]][p[1]].cost }
+    pq.sort_by! { |p| paths[p[0]][p[1]][0] }
 
     i, j, dir = pq.shift
 
@@ -52,46 +50,50 @@ def dijkstra(map)
 
     visited << [i, j, dir]
 
-    adjacent(n, i, j, paths[i][j].directions).each do |x, y, d|
+    adjacent(n, i, j, paths[i][j][1]).each do |x, y, d|
       next if visited.include?([x, y, d])
 
-      if paths[i][j].cost + map[x][y] < paths[x][y].cost
-        paths[x][y] = Path.new(paths[i][j].cost + map[x][y], paths[i][j].directions + [d])
+      if paths[i][j][0] + map[x][y] < paths[x][y][0]
+        paths[x][y] = [paths[i][j][0] + map[x][y], paths[i][j][1] + [d]]
       end
 
       pq << [x, y, d] unless pq.include?([x, y, d])
     end
   end
 
-  paths[n - 1][n - 1].cost
+  p paths[n - 1][n - 1][0]
 end
 
-$min = dijkstra(map)
-p "initial min: #{$min}"
-def dfs(map, current, path, visited, goal)
-  path << current
-  visited[current[0]][current[1]] = true
+dijkstra(map)
 
-  current_cost = path.map { |x, y, d| map[x][y] }.sum - map[0][0]
-  return if current_cost >= $min
-
-  if current[0] == goal[0] && current[1] == goal[1]
-    p "found path with cost #{current_cost}"
-    $min = current_cost
-    return
-  end
-
-  adjacent(map.length, current[0], current[1], path.last(3).map { |c| c[2] }).sort_by { |x, y, d| map[x][y] * 10 - x - y }.each do |x, y, d|
-    next if visited[x][y]
-
-    dfs(map, [x, y, d], path.dup, Marshal.load(Marshal.dump(visited)), goal)
-  end
-end
-
-def experiment(map)
+def shortest_path_algorith(map)
   n = map.size
-  visited = Array.new(n) { Array.new(n) { false } }
+  d = Array.new(n) { Array.new(n) { INFINITY } }
+  d[0][0] = 0
 
-  dfs(map, [0, 0], [], visited, [n - 1, n - 1])
+  p = Array.new(n) { Array.new(n) { nil } }
+
+  for i in 0...n
+    for j in 0...n
+      last_directions = []
+      current = p[i][j]
+      step = 0
+      while current && step < 3
+        step += 1
+        last_directions << current[2]
+        current = p[current[0]][current[1]]
+      end
+
+      adjacent(n, i, j, last_directions).each do |x, y, direction|
+        if d[i][j] + map[x][y] < d[x][y]
+          d[x][y] = d[i][j] + map[x][y]
+          p[x][y] = [i, j, direction]
+        end
+      end
+    end
+  end
+
+  p d[map.length - 1][map.length - 1]
 end
 
+shortest_path_algorith(map)

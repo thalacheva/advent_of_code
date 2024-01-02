@@ -28,7 +28,7 @@ end
 
 def part2(input)
   total = 0
-  sorted = input.sort_by { |row| row.count('?') }
+  sorted = input.sort_by { |row| row.count('?') }.last(43)
 
   sorted.each_with_index do |row, index|
     p "row #{index}"
@@ -56,10 +56,12 @@ def parse_output(input)
 
   p "current total #{total}"
   p "left"
-  input.sort_by { |x| x.count('?') }.last(49).each { |x| p x }
+  input.sort_by { |x| x.count('?') }.last(43).each { |x| p x }
 end
 
 # p part1(input)
-p part2(input)
-# parse_output input
+# current total 2584898678700
+parse_output input
+
+# p part2(input)
 
