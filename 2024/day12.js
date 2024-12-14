@@ -5,34 +5,61 @@ const visited = [...Array(data.length)].map(() => Array(data[0].length).fill(fal
 const map = new Map();
 
 function region(x, y, prefix) {
+  const n = data.length;
+  const m = data[x].length;
+
   if (visited[x][y]) return;
 
   visited[x][y] = true;
-  const current = map.get(data[x][y] + prefix) || {area: 0, perimeter: 0};
-  map.set(data[x][y] + prefix, {area: current.area + 1, perimeter: current.perimeter + 4});
+  const current = map.get(data[x][y] + prefix) || {s: 0, p: 0, v: 0};
+  let vertexes = 0;
+  const d = x === n - 1 || data[x][y] !== data[x + 1][y];
+  const u = x === 0 || data[x][y] !== data[x - 1][y];
+  const r = y === m - 1 || data[x][y] !== data[x][y + 1];
+  const l = y === 0 || data[x][y] !== data[x][y - 1];
 
-  if (x < data.length - 1 && data[x][y] === data[x + 1][y]) {
+  const rd = x < n - 1 && y < m - 1 && data[x][y] !== data[x + 1][y + 1];
+  const ld = x < n - 1 && y > 0 && data[x][y] !== data[x + 1][y - 1];
+  const ru = x > 0 && y < m - 1 && data[x][y] !== data[x - 1][y + 1];
+  const lu = x > 0 && y > 0 && data[x][y] !== data[x - 1][y - 1];
+
+  const nu = x > 0 && data[x][y] === data[x - 1][y];
+  const nd = x < n - 1 && data[x][y] === data[x + 1][y];
+  const nr = y < m - 1 && data[x][y] === data[x][y + 1];
+  const nl = y > 0 && data[x][y] === data[x][y - 1];
+
+  if (l && u) vertexes++;
+  if (l && d) vertexes++;
+  if (r && u) vertexes++;
+  if (r && d) vertexes++;
+  if (nl && nd && ld) vertexes++;
+  if (nl && nu && lu) vertexes++;
+  if (nr && nd && rd) vertexes++;
+  if (nr && nu && ru) vertexes++;
+
+  map.set(data[x][y] + prefix, {s: current.s + 1, p: current.p + 4, v: current.v + vertexes});
+
+  if (x < n - 1 && data[x][y] === data[x + 1][y]) {
     const c1 = map.get(data[x][y] + prefix);
-    map.set(data[x][y] + prefix, {area: c1.area, perimeter: c1.perimeter - 1});
+    map.set(data[x][y] + prefix, {...c1, p: c1.p - 1});
     region(x + 1, y, prefix);
   }
   if (x > 0 && data[x][y] === data[x - 1][y]) {
     const c2 = map.get(data[x][y] + prefix);
-    map.set(data[x][y] + prefix, {area: c2.area, perimeter: c2.perimeter - 1});
+    map.set(data[x][y] + prefix, {...c2, p: c2.p - 1});
     region(x - 1, y, prefix);
   }
-  if (y < data[x].length - 1 && data[x][y] === data[x][y + 1]) {
+  if (y < m - 1 && data[x][y] === data[x][y + 1]) {
     const c3 = map.get(data[x][y] + prefix);
-    map.set(data[x][y] + prefix, {area: c3.area, perimeter: c3.perimeter - 1});
+    map.set(data[x][y] + prefix, {...c3, p: c3.p - 1});
     region(x, y + 1, prefix);
   }
   if (y > 0 && data[x][y] === data[x][y - 1]) {
     const c4 = map.get(data[x][y] + prefix);
-    map.set(data[x][y] + prefix, {area: c4.area, perimeter: c4.perimeter - 1});
+    map.set(data[x][y] + prefix, {...c4, p: c4.p - 1});
     region(x, y - 1, prefix);
   }
 }
-
 
 for (let i = 0; i < data.length; i++) {
   for (let j = 0; j < data[i].length; j++) {
@@ -40,4 +67,5 @@ for (let i = 0; i < data.length; i++) {
   }
 }
 
-console.log(map.entries().reduce((acc, val) => acc + val[1].area * val[1].perimeter, 0));
+console.log(map.entries().reduce((acc, val) => acc + val[1].s * val[1].p, 0));
+console.log(map.entries().reduce((acc, val) => acc + val[1].s * val[1].v, 0));
