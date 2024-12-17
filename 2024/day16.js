@@ -1,118 +1,105 @@
 const fs = require('fs');
 const data = fs.readFileSync('day16.txt', 'utf8').trim().split('\n').map(row => row.split(''));
-const n = data.length;
 
-function print(data, path) {
+const DIRECTIONS = [
+  [0, 1],   // East
+  [1, 0],   // South
+  [0, -1],  // West
+  [-1, 0]   // North
+];
+
+class PriorityQueue {
+  constructor() {
+    this.queue = [];
+  }
+
+  enqueue(state, cost, path) {
+    this.queue.push({ state, cost, path });
+    this.queue.sort((a, b) => a.cost - b.cost);
+  }
+
+  dequeue() {
+    return this.queue.shift();
+  }
+
+  isEmpty() {
+    return this.queue.length === 0;
+  }
+}
+
+function isOnPath(paths, x, y) {
+  for (const path of paths)
+    for (const [px, py] of path)
+      if (px === x && py === y) return true;
+}
+
+function print(maze, paths) {
+  const n = maze.length;
+  let sum = 0;
+
   for (let i = 0; i < n; i++) {
     let row = '';
     for (let j = 0; j < n; j++) {
-      if (path.some(({coords: [x, y]}) => x === i && y === j) && data[i][j] !== 'S' && data[i][j] !== 'E') {
-        const p = path.find(({coords: [x, y]}) => x === i && y === j);
-        switch (p.direction) {
-          case 'N':
-            row += '^';
-            break;
-          case 'E':
-            row += '>';
-            break;
-          case 'S':
-            row += 'v';
-            break;
-          case 'W':
-            row += '<';
-            break;
-        }
-      } else {
-        row += data[i][j];
-      }
+      if (isOnPath(paths, i, j)) {
+        row += 'O';
+        sum++;
+      } else row += maze[i][j];
     }
     console.log(row);
   }
+
+  return sum;
 }
 
-function turn(direction) {
-  switch (direction) {
-    case 'N':
-      return {N: 0, E: 1000, S: 2000, W: 1000};
-    case 'E':
-      return {N: 1000, E: 0, S: 1000, W: 2000};
-    case 'S':
-      return {N: 2000, E: 1000, S: 0, W: 1000};
-    case 'W':
-      return {N: 1000, E: 2000, S: 1000, W: 0};
-  }
-}
+function dijkstra(maze) {
+  const n = maze.length;
+  const start = [n - 2, 1];
+  const end = [1, n - 2];
 
-function neighbors(data, src, direction) {
-  const [x, y] = src;
-  const neighbors = [];
+  const visited = new Map();
+  const pq = new PriorityQueue();
+  let paths = [];
 
-  if (x > 0 && data[x - 1][y] !== '#')
-    neighbors.push({coords: [x - 1, y], direction: 'N', distance: 1 + turn(direction).N});
+  pq.enqueue({ position: start, direction: 0, path: [start] }, 0);
 
-  if (x < n - 1 && data[x + 1][y] !== '#')
-    neighbors.push({coords: [x + 1, y], direction: 'S', distance: 1 + turn(direction).S});
+  let minCost = Infinity;
 
-  if (y > 0 && data[x][y - 1] !== '#')
-    neighbors.push({coords: [x, y - 1], direction: 'W', distance: 1 + turn(direction).W});
+  while (!pq.isEmpty()) {
+    const { state, cost } = pq.dequeue();
+    const { position, direction, path } = state;
+    const [x, y] = position;
 
-  if (y < n - 1 && data[x][y + 1] !== '#')
-    neighbors.push({coords: [x, y + 1], direction: 'E', distance: 1 + turn(direction).E});
-
-  return neighbors;
-}
-
-function dijkstra() {
-  const dist = [...Array(n)].map(() => Array(n).fill({weight: Number.MAX_SAFE_INTEGER, path: []}));
-  const s = [n - 2, 1];
-
-  const pq = [{coords: s,  direction: 'E'}];
-  dist[s[0]][s[1]] = {weight: 0, path: [{coords: s, direction: 'E', distance: 0}]};
-
-  while (pq.length) {
-    pq.sort((a, b) => dist[a.coords[0]][a.coords[1]].weight - dist[b.coords[0]][b.coords[1]].weight);
-
-    const {coords, direction} = pq.shift();
-    const [x, y] = coords;
-
-    for (const neighbor of neighbors(data, coords, direction)) {
-      const [nx, ny] = neighbor.coords;
-      const alt = dist[x][y].weight + neighbor.distance;
-
-      if (alt < dist[nx][ny].weight && !dist[x][y].path.includes(neighbor)) {
-        dist[nx][ny] = {weight: alt, path: [...dist[x][y].path, neighbor]};
-        pq.push(neighbor);
+    if (x === end[0] && y === end[1]) {
+      if (cost < minCost) {
+        minCost = cost;
+        paths = [];
       }
+      if (cost === minCost) paths.push(path);
+      continue;
+    }
+
+    const key = `${x},${y},${direction}`;
+    if (visited.has(key) && visited.get(key) < cost) continue;
+    visited.set(key, cost);
+
+    const [dx, dy] = DIRECTIONS[direction];
+    const nx = x + dx;
+    const ny = y + dy;
+    if (nx >= 0 && nx < n && ny >= 0 && ny < n && maze[nx][ny] !== '#') {
+      pq.enqueue({ position: [nx, ny], direction, path: [...path, [nx, ny]] }, cost + 1);
+    }
+
+    for (const turn of [-1, 1]) {
+      const newDirection = (direction + turn + 4) % 4;
+      pq.enqueue({ position: [x, y], direction: newDirection, path: [...path] }, cost + 1000);
     }
   }
 
-  return dist[1][n - 2].weight;
+  return {minCost, paths};
 }
 
-const s = [n - 2, 1];
-const e = [1, n - 2];
-const visited = [...Array(n)].map(() => Array(n).fill(false));
-let minWeight = dijkstra();
+const {minCost, paths} = dijkstra(data);
+console.log(print(data, paths));
+console.log(paths.length);
+console.log(minCost);
 
-// function findPath(s, e, path = []) {
-//   const [x, y] = s.coords;
-//   visited[x][y] = true;
-
-//   const pathWeight = path.reduce((acc, {distance}) => acc + distance, 0);
-
-//   if (pathWeight > minWeight) return;
-
-//   if (s.coords[0] === e[0] && s.coords[1] === e[1]) {
-//     minWeight = Math.min(minWeight, pathWeight)
-//     console.log('found', minWeight);
-//   } else {
-//     for (const neighbor of neighbors(data, s.coords, s.direction)) {
-//       const [nx, ny] = neighbor.coords;
-//       if (!visited[nx][ny]) findPath(neighbor, e, [...path, neighbor]);
-//       visited[nx][ny] = false;
-//     }
-//   }
-// }
-
-// findPath({coords: s, direction: 'E'}, e);
-console.log('FINAL', minWeight);
