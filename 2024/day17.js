@@ -7,7 +7,7 @@ function combo(A, B, C, operand) {
 
 const program = [2,4,1,7,7,5,0,3,4,0,1,7,5,5,3,0];
 
-function part1(initialA, initialB) {
+function part1(initialA) {
   let A = initialA, B = 0, C = 0
 
   let output = []
@@ -20,7 +20,7 @@ function part1(initialA, initialB) {
         A = Math.floor(A / 2**combo(A, B, C, val))
         break
       case 1:
-        B = B ^ val
+        B = (B ^ val) >>> 0
         break
       case 2:
         B = combo(A, B, C, val) % 8
@@ -32,7 +32,7 @@ function part1(initialA, initialB) {
         }
         break
       case 4:
-        B = B ^ C
+        B = (B ^ C) >>> 0
         break
       case 5:
         output.push(combo(A, B, C, val) % 8)
@@ -52,29 +52,22 @@ function part1(initialA, initialB) {
 
 function calc(A) {
   let B = A % 8;
-  B = B ^ 7;
-  B = B ^ Math.floor(A / 2**B);
-  B = B ^ 7;
+  B = (B ^ 7) >>> 0;
+  B = (B ^ Math.floor(A / 2**B)) >>> 0;
+  B = (B ^ 7) >>> 0;
 
   return B % 8;
 }
 
 function findA(A, output) {
   if (output.length === 0) {
-    if (part1(A) === program.join(',')) console.log('Found ', A);
+    console.log(A);
   } else {
     const val = output.pop();
-    console.log(val, output);
     for (let i = 0; i < 8; i++) {
-      if (calc(A * 8 + i) === val) {
-        console.log('rem ', i, ' for val ', val);
-        findA(A * 8 + i, [...output]);
-      }
+      if (calc(A * 8 + i) === val) findA(A * 8 + i, [...output]);
     }
   }
 }
 
 findA(0, [...program]);
-
-console.log(part1(258394904430491));
-console.log(part1(258395172865947));
