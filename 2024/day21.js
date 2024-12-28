@@ -89,7 +89,16 @@ function minLength(paths) {
 
 function minPaths(paths) {
   const minPathLength = minLength(paths);
-  return paths.filter(path => path.length === minPathLength);
+  const minPaths = paths.filter(path => path.length === minPathLength);
+  // if (minPaths.length === 1) return minPaths;
+
+  // let ppPaths = minPaths.filter(path => !path.join('').includes('<A'));
+  // if (ppPaths.length === 0) ppPaths = minPaths.filter(path => !path.join('').includes('^>A'));
+  // else ppPaths = ppPaths.filter(path => !path.join('').includes('^>A'));
+
+  // if (ppPaths.length > 0) return ppPaths.filter(path => !path.join('').includes('v<A'));
+
+  return minPaths;
 }
 
 function forward(paths) {
@@ -110,6 +119,12 @@ function forward(paths) {
   return minPaths(newPaths);
 }
 
+function print(paths) {
+  for (const path of paths) {
+    console.log(path.join(''), ' length: ', path.length);
+  }
+}
+
 function part1() {
   let complexity = 0;
 
@@ -127,12 +142,104 @@ function part1() {
       paths = forward(paths);
     }
 
-    const minPathLength = minLength(paths);
-    const numRegex = /\d+/;
-
-    complexity += minPathLength * Number(code.join('').match(numRegex)[0]);
+    complexity += minLength(paths) * Number(code.join('').match(/\d+/)[0]);
   }
 
   console.log(complexity);
 }
 
+function chooseBest(variants) {
+  let bestVariant;
+  let minLen = Infinity;
+
+  for (const variant of variants) {
+    let results = [variant];
+    for (let i = 0; i < 2; i++) {
+      results = forward(results);
+    }
+
+    const minPathLength = minLength(results);
+    if (minPathLength < minLen) {
+      minLen = minPathLength;
+      bestVariant = variant;
+    }
+  }
+
+  return bestVariant;
+}
+
+function toParts(path) {
+  return path.split('A').map(p => p + 'A').slice(0, -1);
+}
+
+const map = new Map();
+
+function calcComplexity(path) {
+  const partsArr = toParts(path, 1);
+  let partsMap = new Map();
+  for (const part of partsArr) {
+    if (partsMap.has(part)) {
+      partsMap.set(part, partsMap.get(part) + 1);
+    } else {
+      partsMap.set(part, 1);
+    }
+  }
+
+  for (let i = 0; i < 25; i++) {
+    const newParts = new Map();
+    partsMap.forEach((count, prt) => {
+      let pp;
+      if (map.has(prt)) {
+        pp = map.get(prt);
+      } else {
+        const variants = forward([prt]);
+        pp = chooseBest(variants).join('');
+        map.set(prt, pp);
+      }
+
+      const pArr = toParts(pp);
+      for (const p of pArr) {
+        if (newParts.has(p)) {
+          newParts.set(p, newParts.get(p) + count);
+        } else {
+          newParts.set(p, count);
+        }
+      }
+    });
+
+    partsMap = newParts;
+  }
+
+  let len = 0;
+  partsMap.forEach((count, p) => len += p.length * count);
+
+  return len;
+}
+
+function part2() {
+  let complexity = 0;
+
+  for (const code of codes) {
+    let paths = [];
+    let start = [3, 2];
+    for (let i = 0; i < code.length; i++) {
+      const end = find(k1, code[i]);
+      const parts = dijkstra(k1, start, end);
+      paths = mergePaths(paths, parts);
+      start = end;
+    }
+
+    let minLen = Infinity;
+    for (const path of paths) {
+      const len = calcComplexity(path.join(''));
+      if (len < minLen) minLen = len;
+    }
+
+    complexity += minLen * Number(code.join('').match(/\d+/)[0]);
+  }
+
+  console.log(complexity);
+}
+
+part1();
+part2();
