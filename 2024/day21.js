@@ -90,14 +90,6 @@ function minLength(paths) {
 function minPaths(paths) {
   const minPathLength = minLength(paths);
   const minPaths = paths.filter(path => path.length === minPathLength);
-  // if (minPaths.length === 1) return minPaths;
-
-  // let ppPaths = minPaths.filter(path => !path.join('').includes('<A'));
-  // if (ppPaths.length === 0) ppPaths = minPaths.filter(path => !path.join('').includes('^>A'));
-  // else ppPaths = ppPaths.filter(path => !path.join('').includes('^>A'));
-
-  // if (ppPaths.length > 0) return ppPaths.filter(path => !path.join('').includes('v<A'));
-
   return minPaths;
 }
 
@@ -117,6 +109,19 @@ function forward(paths) {
   }
 
   return minPaths(newPaths);
+}
+
+function move(path) {
+  let paths = [];
+  start = [0, 2];
+  for (let i = 0; i < path.length; i++) {
+    const end = find(k2, path[i]);
+    const parts = dijkstra(k2, start, end);
+    paths = mergePaths(paths, parts);
+    start = end;
+  }
+
+  return paths;
 }
 
 function print(paths) {
@@ -149,7 +154,7 @@ function part1() {
 }
 
 function chooseBest(variants) {
-  let bestVariant;
+  let bestVariants = [];
   let minLen = Infinity;
 
   for (const variant of variants) {
@@ -161,11 +166,13 @@ function chooseBest(variants) {
     const minPathLength = minLength(results);
     if (minPathLength < minLen) {
       minLen = minPathLength;
-      bestVariant = variant;
+      bestVariants = [variant];
+    } else if (minPathLength === minLen) {
+      bestVariants.push(variant);
     }
   }
 
-  return bestVariant;
+  return bestVariants;
 }
 
 function toParts(path) {
@@ -174,7 +181,7 @@ function toParts(path) {
 
 const map = new Map();
 
-function calcComplexity(path) {
+function calcComplexity(path, n) {
   const partsArr = toParts(path, 1);
   let partsMap = new Map();
   for (const part of partsArr) {
@@ -185,15 +192,25 @@ function calcComplexity(path) {
     }
   }
 
-  for (let i = 0; i < 25; i++) {
+  for (let i = 0; i < n; i++) {
     const newParts = new Map();
     partsMap.forEach((count, prt) => {
       let pp;
       if (map.has(prt)) {
         pp = map.get(prt);
       } else {
-        const variants = forward([prt]);
-        pp = chooseBest(variants).join('');
+        const variants = move(prt);
+        if (variants.length === 1) {
+          pp = variants[0].join('');
+        } else {
+          const bestVariants = chooseBest(variants);
+          if (bestVariants.length > 1) {
+            console.log('for ', prt);
+            print(bestVariants);
+            console.log('-----------------');
+          }
+          pp = bestVariants.pop().join('');
+        }
         map.set(prt, pp);
       }
 
@@ -231,9 +248,10 @@ function part2() {
 
     let minLen = Infinity;
     for (const path of paths) {
-      const len = calcComplexity(path.join(''));
+      const len = calcComplexity(path.join(''), 25);
       if (len < minLen) minLen = len;
     }
+    console.log(code.join(''), minLen, Number(code.join('').match(/\d+/)[0]));
 
     complexity += minLen * Number(code.join('').match(/\d+/)[0]);
   }
